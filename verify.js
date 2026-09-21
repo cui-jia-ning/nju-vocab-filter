@@ -126,6 +126,15 @@ async function main() {
   await new Promise(r => setTimeout(r, 300));
   check('第 2 页渲染', await evalJs(`document.querySelectorAll('#word-list .word-row').length`) === 100);
 
+  // 例句功能
+  await evalJs(`const q3=document.querySelector('#q'); q3.value='abandon'; q3.dispatchEvent(new Event('input'))`);
+  await new Promise(r => setTimeout(r, 300));
+  check('abandon 含例句与翻译字段', await evalJs(`!!VOCAB.find(x=>x.w==='abandon').ex && !!VOCAB.find(x=>x.w==='abandon').exZh`));
+  await evalJs(`document.querySelector('#word-list .ex-btn').click()`);
+  await new Promise(r => setTimeout(r, 300));
+  check('点击「例句」后展开例句框', await evalJs(`(()=>{ const b=document.querySelector('#word-list .ex-box'); return !!b && !b.classList.contains('hidden') && b.querySelector('.ex-sen').textContent.length>0 && b.querySelector('.ex-zh').textContent.length>0 })()`));
+  check('例句朗读函数可用', await evalJs(`(()=>{ try{ speakEx('abandon'); return true }catch(e){ return false } })()`));
+
   // 截图
   const shot = await send('Page.captureScreenshot', { format: 'png' });
   require('fs').writeFileSync('verify_page2.png', Buffer.from(shot.result.data, 'base64'));

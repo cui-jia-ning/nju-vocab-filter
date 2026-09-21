@@ -53,7 +53,12 @@
   .mini-btn.danger{color:var(--a);border-color:#f3c2c2}
   .mini-btn:disabled{opacity:.45;cursor:not-allowed}
 
-  .word-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:11px;margin-bottom:8px;background:#fff;transition:.12s}
+  .word-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:11px;margin-bottom:8px;background:#fff;transition:.12s}
+  .ex-btn{flex:none;border:1px solid var(--line);background:#fff;color:var(--accent);border-radius:8px;font-size:12px;padding:3px 8px;cursor:pointer;line-height:1.4}
+  .ex-btn:hover{background:var(--accent-soft)}
+  .ex-box{width:100%;margin-top:2px;border-left:3px solid var(--accent-soft);padding:4px 10px 6px;font-size:13px}
+  .ex-box .ex-sen{font-style:italic;color:var(--ink)}
+  .ex-box .ex-zh{color:var(--sub);font-size:12.5px;margin-top:2px}
   .word-row:hover{border-color:#c9d4f5;box-shadow:var(--shadow)}
   .word-row .ck{width:17px;height:17px;accent-color:var(--accent);cursor:pointer;flex:none}
   .word-row .w{flex:none;min-width:150px;font-size:15.5px;font-weight:700;color:var(--ink)}
@@ -286,6 +291,7 @@ function renderList(){
         <span class="ph">${esc(x.ph||'')}</span>
       </div>
       <button class="spk" onclick="speak('${esc(x.w)}')" title="朗读单词">🔊</button>
+      ${x.ex?`<button class="ex-btn" onclick="toggleEx(this)">例句 ▸</button><div class="ex-box hidden"><span class="ex-sen">${esc(x.ex)}</span> <button class="spk" onclick="speakEx('${esc(x.w)}')" title="朗读整句" style="font-size:12px">🔊</button><div class="ex-zh">${esc(x.exZh)}</div></div>`:''}
       <span class="badge ${x.lv}">${x.lv}</span>
       <span class="m ${f.mask?'masked':''}" ${f.mask?`onclick="this.classList.toggle('masked')"`:''}>${esc(x.m)}</span>
       ${f.batch?'':(inBank
@@ -340,6 +346,7 @@ function renderBank(){
         <span class="ph">${esc(x.ph||'')}</span>
       </div>
       <button class="spk" onclick="speak('${esc(x.w)}')" title="朗读单词">🔊</button>
+      ${x.ex?`<button class="ex-btn" onclick="toggleEx(this)">例句 ▸</button><div class="ex-box hidden"><span class="ex-sen">${esc(x.ex)}</span> <button class="spk" onclick="speakEx('${esc(x.w)}')" title="朗读整句" style="font-size:12px">🔊</button><div class="ex-zh">${esc(x.exZh)}</div></div>`:''}
       <span class="badge ${x.lv}">${x.lv}</span>
       <span class="m">${esc(x.m)}</span>
       <button class="rm-btn" title="从词库移除" onclick="removeWord('${esc(x.w)}')">×</button>
@@ -427,6 +434,13 @@ function speak(w){
   if(v) u.voice = v;
   speechSynthesis.cancel();
   speechSynthesis.speak(u);
+}
+function speakEx(w){ const x = VOCAB.find(v=>v.w===w); if(x && x.ex) speak(x.ex); }
+function toggleEx(btn){
+  const box = btn.nextElementSibling;
+  if(!box || !box.classList.contains('ex-box')) return;
+  box.classList.toggle('hidden');
+  btn.textContent = box.classList.contains('hidden') ? '例句 ▸' : '例句 ▾';
 }
 
 /* ================= 事件绑定 ================= */
