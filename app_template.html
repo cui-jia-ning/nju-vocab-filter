@@ -88,6 +88,32 @@
   #toast.show{transform:translateX(-50%) translateY(0)}
 
   .note{font-size:12px;color:var(--sub);margin-top:10px;line-height:1.6}
+
+  /* ===== 落地页 ===== */
+  .hero{max-width:620px;margin:8vh auto 0;text-align:center;padding:44px 34px;background:linear-gradient(160deg,#ffffff 0%,#f0f3fd 100%);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow)}
+  .hero h1{font-size:27px;margin-bottom:10px;letter-spacing:.5px}
+  .hero .sub{color:var(--sub);font-size:14px;line-height:1.9;margin-bottom:22px}
+  .hero .lv-summary{display:flex;justify-content:center;gap:10px;margin-bottom:26px;flex-wrap:wrap}
+  .hero .lv-box{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 18px;font-size:12px;color:var(--sub)}
+  .hero .lv-box b{display:block;font-size:20px;margin-bottom:2px}
+  .hero .lv-box.A b{color:var(--a)} .hero .lv-box.B b{color:var(--b)} .hero .lv-box.C b{color:var(--c)}
+  .enter-btn{display:inline-block;padding:14px 52px;font-size:17px;font-weight:700;color:#fff;background:linear-gradient(135deg,#4c6ef5,#3b5bdb);border:none;border-radius:999px;cursor:pointer;box-shadow:0 6px 20px rgba(59,91,219,.35);transition:.15s}
+  .enter-btn:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(59,91,219,.45)}
+  .hero .skip{margin-top:18px;font-size:13px;color:var(--sub);cursor:pointer;user-select:none}
+  .hero .skip input{accent-color:var(--accent);width:14px;height:14px;vertical-align:-2px}
+  .hero .feat{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-top:26px;font-size:12.5px;color:var(--sub)}
+  .hero .feat span{background:#fff;border:1px solid var(--line);border-radius:999px;padding:5px 14px}
+
+  /* ===== 音标与发音 ===== */
+  .word-col{flex:none;min-width:140px;display:flex;flex-direction:column;gap:1px}
+  .word-col .w{cursor:pointer}
+  .word-col .w:hover{color:var(--accent)}
+  .word-col .ph{font-size:11.5px;color:#9aa2b5;font-family:"Times New Roman",serif}
+  .spk{flex:none;border:1px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;font-size:13px;padding:4px 8px;line-height:1.2}
+  .spk:hover{border-color:var(--accent)}
+  .homelink{font-size:12px;color:var(--sub);cursor:pointer;text-decoration:none;margin-left:10px}
+  .homelink:hover{color:var(--accent)}
+
   footer.credit{margin-top:26px;text-align:center;font-size:11.5px;color:#9aa2b5;line-height:1.8}
   footer.credit .dot{margin:0 8px;opacity:.6}
   footer.credit .mail{color:#9aa2b5;text-decoration:none;border-bottom:1px dotted #c3c9d8;transition:.12s}
@@ -102,10 +128,10 @@
 </head>
 <body>
 <div class="wrap">
-  <header class="top">
+  <header class="top" id="app-header">
     <div>
       <h1>南京大学大学英语通用词汇</h1>
-      <div class="src">基于四六级考委会词表 · A 级 570 / B 级 1,217 / C 级 1,299 · 共 3,086 词</div>
+      <div class="src">基于四六级考委会词表 · A 级 570 / B 级 1,217 / C 级 1,299 · 共 3,086 词<a class="homelink" onclick="goHome()">⟵ 返回首页</a></div>
     </div>
     <div class="stats">
       <div class="stat">词表总数<b id="stat-total">–</b></div>
@@ -114,13 +140,31 @@
     </div>
   </header>
 
-  <div class="tabs">
+  <div class="tabs" id="app-tabs">
     <div class="tab active" id="tab-read" onclick="switchTab('read')">📖 词表阅读</div>
     <div class="tab" id="tab-bank" onclick="switchTab('bank')">⭐ 个人词库<span class="cnt" id="tab-bank-cnt">0</span></div>
   </div>
 
+  <!-- 落地页 -->
+  <section id="view-home">
+    <div class="hero">
+      <h1>南京大学大学英语通用词汇</h1>
+      <div class="sub">基于四六级考委会词表 · 删除中小学词汇与派生词后分级收录<br>分级考试、期末考试、学位考试的指定词表</div>
+      <div class="lv-summary">
+        <div class="lv-box A"><b>570</b>A 级 · 四级高频词、学术词<br>分级考 / 期末考重点</div>
+        <div class="lv-box B"><b>1,217</b>B 级 · 四级次高频词<br>期末考 / 学位考重点</div>
+        <div class="lv-box C"><b>1,299</b>C 级 · 六级词<br>暂不作要求</div>
+      </div>
+      <button class="enter-btn" onclick="enterApp()">进入词库 →</button>
+      <div><label class="skip"><input type="checkbox" id="skip-home"> 下次直接进入</label></div>
+      <div class="feat">
+        <span>📖 词表阅读</span><span>🔍 级别 / 首字母 / 释义筛选</span><span>🔊 音标发音</span><span>⭐ 个人词库</span>
+      </div>
+    </div>
+  </section>
+
   <!-- 词表阅读 -->
-  <section id="view-read">
+  <section id="view-read" class="hidden">
     <div class="panel">
       <div class="filters">
         <div class="f-group">
@@ -237,7 +281,11 @@ function renderList(){
     const inBank = bank.has(x.w);
     return `<div class="word-row">
       ${f.batch?`<input type="checkbox" class="ck" ${selected.has(i)?'checked':''} onchange="toggleSel(${i},this.checked)">`:''}
-      <span class="w">${esc(x.w)}</span>
+      <div class="word-col">
+        <span class="w" onclick="speak('${esc(x.w)}')" title="点击发音">${esc(x.w)}</span>
+        <span class="ph">${esc(x.ph||'')}</span>
+      </div>
+      <button class="spk" onclick="speak('${esc(x.w)}')" title="朗读单词">🔊</button>
       <span class="badge ${x.lv}">${x.lv}</span>
       <span class="m ${f.mask?'masked':''}" ${f.mask?`onclick="this.classList.toggle('masked')"`:''}>${esc(x.m)}</span>
       ${f.batch?'':(inBank
@@ -287,7 +335,11 @@ function renderBank(){
   const el = $('#bank-list');
   if(!uniq.length){ el.innerHTML = `<div class="empty">${bank.size? '没有匹配的单词':'词库还是空的 — 去「词表阅读」筛选并加入单词吧'}</div>`; refreshStats(); return; }
   el.innerHTML = uniq.map(x=>`<div class="word-row">
-      <span class="w">${esc(x.w)}</span>
+      <div class="word-col">
+        <span class="w" onclick="speak('${esc(x.w)}')" title="点击发音">${esc(x.w)}</span>
+        <span class="ph">${esc(x.ph||'')}</span>
+      </div>
+      <button class="spk" onclick="speak('${esc(x.w)}')" title="朗读单词">🔊</button>
       <span class="badge ${x.lv}">${x.lv}</span>
       <span class="m">${esc(x.m)}</span>
       <button class="rm-btn" title="从词库移除" onclick="removeWord('${esc(x.w)}')">×</button>
@@ -335,13 +387,46 @@ function clearBank(){
   if(confirm(`确定清空个人词库吗？共 ${bank.size} 个单词，此操作不可撤销。`)){ bank.clear(); saveBank(); renderBank(); renderList(); toast('词库已清空'); }
 }
 
-/* ================= 标签页 ================= */
+/* ================= 标签页与视图路由 ================= */
+let curTab = 'read';
 function switchTab(t){
-  $('#tab-read').classList.toggle('active', t==='read');
-  $('#tab-bank').classList.toggle('active', t==='bank');
-  $('#view-read').classList.toggle('hidden', t!=='read');
-  $('#view-bank').classList.toggle('hidden', t!=='bank');
-  if(t==='bank') renderBank();
+  curTab = t;
+  showView(t);
+}
+function showView(name){
+  const isHome = name==='home';
+  $('#app-header').classList.toggle('hidden', isHome);
+  $('#app-tabs').classList.toggle('hidden', isHome);
+  $('#view-home').classList.toggle('hidden', name!=='home');
+  $('#view-read').classList.toggle('hidden', name!=='read');
+  $('#view-bank').classList.toggle('hidden', name!=='bank');
+  $('#tab-read').classList.toggle('active', name==='read');
+  $('#tab-bank').classList.toggle('active', name==='bank');
+  if(name==='bank') renderBank();
+  if(name==='read') renderList();
+}
+function enterApp(){
+  if($('#skip-home').checked) localStorage.setItem('nju-vocab-skip-home','1');
+  location.hash = '#/app';
+  showView('read');
+}
+function goHome(){
+  location.hash = '';
+  showView('home');
+}
+
+/* ================= 语音朗读 ================= */
+let voices = [];
+function loadVoices(){ voices = speechSynthesis.getVoices().filter(v=>/^en([-_]|$)/i.test(v.lang)); }
+if('speechSynthesis' in window){ loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
+function speak(w){
+  if(!('speechSynthesis' in window)) return toast('当前浏览器不支持语音朗读');
+  const u = new SpeechSynthesisUtterance(w);
+  u.lang = 'en-US'; u.rate = 0.88;
+  const v = voices.find(v=>/en[-_]US/i.test(v.lang)) || voices[0];
+  if(v) u.voice = v;
+  speechSynthesis.cancel();
+  speechSynthesis.speak(u);
 }
 
 /* ================= 事件绑定 ================= */
@@ -362,7 +447,14 @@ $('#tgl-batch').addEventListener('change', e=>toggleBatch(e.target.checked));
 $('#btn-export-shown').addEventListener('click', exportShown);
 
 /* ================= 启动 ================= */
-renderList();
+if(location.hash === '#/app' || localStorage.getItem('nju-vocab-skip-home')==='1'){
+  showView('read');
+}else{
+  showView('home');
+}
+window.addEventListener('hashchange', ()=>{
+  if(location.hash === '#/app' && !$('#view-home').classList.contains('hidden')) showView('read');
+});
 </script>
 </body>
 </html>

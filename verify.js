@@ -47,6 +47,27 @@ async function main() {
   const checks = [];
   const check = (name, cond) => { checks.push([name, !!cond]); console.log((cond ? 'PASS' : 'FAIL') + ' | ' + name); };
 
+  check('默认显示落地页', await evalJs(`!document.querySelector('#view-home').classList.contains('hidden')`));
+  check('落地页隐藏应用头部', await evalJs(`document.querySelector('#app-header').classList.contains('hidden')`));
+  await evalJs(`enterApp()`);
+  await new Promise(r => setTimeout(r, 300));
+  check('点击进入后显示词表', await evalJs(`!document.querySelector('#view-read').classList.contains('hidden')`));
+  check('hash 变为 #/app', await evalJs(`location.hash`) === '#/app');
+  await evalJs(`goHome()`);
+  await new Promise(r => setTimeout(r, 300));
+  check('返回首页恢复落地页', await evalJs(`!document.querySelector('#view-home').classList.contains('hidden')`));
+  await evalJs(`enterApp()`);
+  await new Promise(r => setTimeout(r, 300));
+
+  check('音标字段已内嵌（abandon）', await evalJs(`VOCAB.find(x=>x.w==='abandon').ph`) === '/ʌbˈændʌn/');
+  check('词行显示音标', await evalJs(`!!document.querySelector('#word-list .ph') && document.querySelector('#word-list .ph').textContent.startsWith('/')`));
+  check('大写词条 Bible 已修复', await evalJs(`!!VOCAB.find(x=>x.w==='Bible')`));
+  check('被截断的 ible 不存在', await evalJs(`!VOCAB.find(x=>x.w==='ible')`));
+  const speakRet = await evalJs(`(()=>{ try{ speak('abandon'); return speechSynthesis.pending || speechSynthesis.speaking; }catch(e){ return 'ERR:'+e.message } })()`);
+  check('TTS 发音调用成功', speakRet === true);
+  const voiceN = await evalJs(`voices.length`);
+  console.log('INFO | 可用英文语音数:', voiceN);
+
   check('VOCAB 载入 3086 词', await evalJs('VOCAB.length') === 3086);
   check('词表首屏渲染 100 行', await evalJs(`document.querySelectorAll('#word-list .word-row').length`) === 100);
   check('统计：总数 3086', await evalJs(`document.querySelector('#stat-total').textContent`) === '3086');
