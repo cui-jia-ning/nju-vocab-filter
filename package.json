@@ -1,0 +1,9 @@
+{
+  "name": "nju-vocab-filter",
+  "version": "1.0.0",
+  "private": true,
+  "description": "南京大学大学英语通用词汇 · 阅读与筛选工具",
+  "scripts": {
+    "dev": "node server.js"
+  }
+}

@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>南大通用英语词汇 · 阅读与筛选</title>
+<style>
+  :root{
+    --bg:#f4f6fa; --card:#ffffff; --ink:#1c2333; --sub:#6b7486;
+    --line:#e6e9f0; --accent:#3b5bdb; --accent-soft:#e7ecfb;
+    --a:#e03131; --b:#f08c00; --c:#1971c2;
+    --ok:#2f9e44; --shadow:0 1px 3px rgba(20,30,60,.08),0 4px 14px rgba(20,30,60,.06);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+  .wrap{max-width:960px;margin:0 auto;padding:20px 16px 90px}
+
+  header.top{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:16px}
+  header.top h1{font-size:20px;font-weight:700;letter-spacing:.3px}
+  header.top .src{font-size:12px;color:var(--sub)}
+  .stats{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 12px;font-size:12px;color:var(--sub);box-shadow:var(--shadow)}
+  .stat b{display:block;font-size:17px;color:var(--ink);font-variant-numeric:tabular-nums}
+
+  .tabs{display:flex;gap:8px;margin-bottom:14px}
+  .tab{flex:1;padding:11px 0;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:12px;font-size:15px;font-weight:600;color:var(--sub);cursor:pointer;box-shadow:var(--shadow);transition:.15s}
+  .tab.active{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
+  .tab .cnt{font-size:12px;font-weight:400;margin-left:6px;opacity:.85}
+
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:14px;margin-bottom:14px}
+  .filters{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  .f-group{display:flex;align-items:center;gap:6px}
+  .f-label{font-size:12px;color:var(--sub);white-space:nowrap}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{padding:5px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:13px;cursor:pointer;color:var(--sub);transition:.12s}
+  .chip.active{background:var(--accent);border-color:var(--accent);color:#fff}
+  .chip.lvA.active{background:var(--a);border-color:var(--a)}
+  .chip.lvB.active{background:var(--b);border-color:var(--b)}
+  .chip.lvC.active{background:var(--c);border-color:var(--c)}
+  select,input[type=text]{padding:7px 10px;border:1px solid var(--line);border-radius:9px;font-size:13px;background:#fff;color:var(--ink);outline:none}
+  input[type=text]:focus,select:focus{border-color:var(--accent)}
+  #q{flex:1;min-width:180px}
+  .toggles{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
+  .tgl{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--sub);cursor:pointer;user-select:none}
+  .tgl input{accent-color:var(--accent);width:15px;height:15px;cursor:pointer}
+
+  .list-meta{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--sub);margin:2px 2px 10px}
+  .list-meta .grow{flex:1}
+  .mini-btn{padding:6px 12px;border-radius:8px;border:1px solid var(--line);background:#fff;font-size:12.5px;cursor:pointer;color:var(--ink)}
+  .mini-btn:hover{border-color:var(--accent);color:var(--accent)}
+  .mini-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .mini-btn.primary:hover{filter:brightness(1.08);color:#fff}
+  .mini-btn.danger{color:var(--a);border-color:#f3c2c2}
+  .mini-btn:disabled{opacity:.45;cursor:not-allowed}
+
+  .word-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:11px;margin-bottom:8px;background:#fff;transition:.12s}
+  .word-row:hover{border-color:#c9d4f5;box-shadow:var(--shadow)}
+  .word-row .ck{width:17px;height:17px;accent-color:var(--accent);cursor:pointer;flex:none}
+  .word-row .w{flex:none;min-width:150px;font-size:15.5px;font-weight:700;color:var(--ink)}
+  .word-row .m{flex:1;font-size:13.5px;color:var(--sub);line-height:1.5}
+  .word-row .m.masked{filter:blur(7px);cursor:pointer;user-select:none}
+  .word-row .m.masked:hover{filter:blur(4px)}
+  .badge{flex:none;font-size:11px;font-weight:700;color:#fff;border-radius:6px;padding:2px 7px;letter-spacing:.5px}
+  .badge.A{background:var(--a)} .badge.B{background:var(--b)} .badge.C{background:var(--c)}
+  .add-btn{flex:none;padding:6px 13px;border-radius:8px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap}
+  .add-btn:hover{background:var(--accent);color:#fff}
+  .add-btn.added{background:#edf7ee;border-color:#bfe3c6;color:var(--ok);cursor:default}
+  .rm-btn{flex:none;width:28px;height:28px;border-radius:8px;border:1px solid #f3c2c2;background:#fff;color:var(--a);font-size:16px;line-height:1;cursor:pointer}
+  .rm-btn:hover{background:var(--a);color:#fff}
+
+  .pager{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;flex-wrap:wrap}
+  .pager button{padding:6px 14px;border-radius:8px;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:13px}
+  .pager button:disabled{opacity:.4;cursor:default}
+  .pager .pg-info{font-size:13px;color:var(--sub)}
+
+  .empty{text-align:center;color:var(--sub);font-size:14px;padding:44px 0}
+
+  .bank-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+  .bank-tools input[type=text]{flex:1;min-width:150px}
+
+  .batch-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;background:#1c2333;color:#fff;border-radius:14px;padding:10px 16px;display:none;align-items:center;gap:12px;box-shadow:0 8px 30px rgba(0,0,0,.3);z-index:50;font-size:13.5px}
+  .batch-bar.show{display:flex}
+  .batch-bar button{padding:7px 14px;border-radius:9px;border:none;cursor:pointer;font-size:13px;font-weight:600}
+  .batch-bar .do{background:var(--accent);color:#fff}
+  .batch-bar .cancel{background:#39415a;color:#cfd6ea}
+
+  #toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-80px);background:#1c2333;color:#fff;padding:10px 20px;border-radius:10px;font-size:13.5px;transition:.25s;z-index:99;box-shadow:0 6px 24px rgba(0,0,0,.25)}
+  #toast.show{transform:translateX(-50%) translateY(0)}
+
+  .note{font-size:12px;color:var(--sub);margin-top:10px;line-height:1.6}
+  .hidden{display:none!important}
+  @media (max-width:640px){
+    .word-row{flex-wrap:wrap}
+    .word-row .w{min-width:110px}
+    header.top h1{font-size:17px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>南京大学大学英语通用词汇</h1>
+      <div class="src">基于四六级考委会词表 · A 级 570 / B 级 1,217 / C 级 1,299 · 共 3,086 词</div>
+    </div>
+    <div class="stats">
+      <div class="stat">词表总数<b id="stat-total">–</b></div>
+      <div class="stat">个人词库<b id="stat-bank">0</b></div>
+      <div class="stat">本次筛出<b id="stat-shown">–</b></div>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <div class="tab active" id="tab-read" onclick="switchTab('read')">📖 词表阅读</div>
+    <div class="tab" id="tab-bank" onclick="switchTab('bank')">⭐ 个人词库<span class="cnt" id="tab-bank-cnt">0</span></div>
+  </div>
+
+  <!-- 词表阅读 -->
+  <section id="view-read">
+    <div class="panel">
+      <div class="filters">
+        <div class="f-group">
+          <span class="f-label">级别</span>
+          <div class="chips" id="lv-chips">
+            <span class="chip active" data-lv="all">全部</span>
+            <span class="chip lvA" data-lv="A">A 级</span>
+            <span class="chip lvB" data-lv="B">B 级</span>
+            <span class="chip lvC" data-lv="C">C 级</span>
+          </div>
+        </div>
+        <div class="f-group">
+          <span class="f-label">首字母</span>
+          <select id="letter-sel"><option value="all">全部</option></select>
+        </div>
+        <div class="f-group" style="flex:1">
+          <input type="text" id="q" placeholder="搜索单词或中文释义…">
+        </div>
+      </div>
+      <div class="toggles">
+        <label class="tgl"><input type="checkbox" id="tgl-hide-banked"> 隐藏已入词库的词</label>
+        <label class="tgl"><input type="checkbox" id="tgl-mask"> 释义遮罩（自测模式，点击显示）</label>
+        <label class="tgl"><input type="checkbox" id="tgl-batch"> 批量筛选模式</label>
+      </div>
+    </div>
+
+    <div class="list-meta">
+      <span id="meta-info"></span>
+      <span class="grow"></span>
+      <button class="mini-btn" id="btn-export-shown">导出当前结果</button>
+    </div>
+
+    <div id="word-list"></div>
+    <div class="pager" id="pager"></div>
+  </section>
+
+  <!-- 个人词库 -->
+  <section id="view-bank" class="hidden">
+    <div class="panel">
+      <div class="bank-tools">
+        <input type="text" id="bank-q" placeholder="在词库中搜索…">
+        <button class="mini-btn" onclick="exportBank('txt')">导出 TXT</button>
+        <button class="mini-btn" onclick="exportBank('json')">导出 JSON</button>
+        <button class="mini-btn" onclick="importBank()">导入 JSON</button>
+        <button class="mini-btn danger" onclick="clearBank()">清空词库</button>
+        <span class="grow" style="flex:1"></span>
+      </div>
+      <div id="bank-list"></div>
+    </div>
+    <div class="note">词库保存在本浏览器 localStorage 中，不上传任何数据；导出 JSON 后可在其他设备导入。按级别筛选出的“考点词”（A 级为期末/分级考重点，B 级为期末/学位考重点）可优先收入词库。</div>
+  </section>
+</div>
+
+<div class="batch-bar" id="batch-bar">
+  <span>已勾选 <b id="batch-n">0</b> 个单词</span>
+  <button class="do" onclick="batchAdd()">加入个人词库</button>
+  <button class="cancel" onclick="toggleBatch(false)">退出批量模式</button>
+</div>
+
+<div id="toast"></div>
+<input type="file" id="import-file" accept=".json,application/json" class="hidden" onchange="onImportFile(event)">
+
+<script>
+/* ================= 数据 ================= */
+const VOCAB = __VOCAB_JSON__;
+
+/* ================= 状态 ================= */
+const LS_KEY = 'nju-vocab-bank-v1';
+let bank = new Set(JSON.parse(localStorage.getItem(LS_KEY) || '[]'));
+let f = { lv:'all', letter:'all', q:'', hideBanked:false, mask:false, batch:false, page:1, pageSize:100 };
+let selected = new Set();
+let currentList = [];
+let bankQ = '';
+
+/* ================= 工具 ================= */
+const $ = s => document.querySelector(s);
+const esc = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function saveBank(){ localStorage.setItem(LS_KEY, JSON.stringify([...bank])); refreshStats(); }
+let toastTimer;
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),1600); }
+function refreshStats(){
+  $('#stat-total').textContent = VOCAB.length;
+  $('#stat-bank').textContent = bank.size;
+  $('#tab-bank-cnt').textContent = bank.size;
+  $('#stat-shown').textContent = currentList.length;
+}
+
+/* ================= 筛选 ================= */
+function filtered(){
+  const q = f.q.trim().toLowerCase();
+  return VOCAB.filter(x=>{
+    if(f.lv!=='all' && x.lv!==f.lv) return false;
+    if(f.letter!=='all' && x.w[0].toLowerCase()!==f.letter) return false;
+    if(f.hideBanked && bank.has(x.w)) return false;
+    if(q && !(x.w.toLowerCase().includes(q) || x.m.toLowerCase().includes(q))) return false;
+    return true;
+  });
+}
+
+/* ================= 词表渲染 ================= */
+function renderList(){
+  currentList = filtered();
+  if(f.page > maxPage()) f.page = maxPage();
+  const start = (f.page-1)*f.pageSize;
+  const pageItems = currentList.slice(start, start+f.pageSize);
+  const el = $('#word-list');
+  if(!pageItems.length){ el.innerHTML = '<div class="empty">没有符合筛选条件的单词</div>'; }
+  else el.innerHTML = pageItems.map((x)=>{
+    const i = VOCAB.indexOf(x);
+    const inBank = bank.has(x.w);
+    return `<div class="word-row">
+      ${f.batch?`<input type="checkbox" class="ck" ${selected.has(i)?'checked':''} onchange="toggleSel(${i},this.checked)">`:''}
+      <span class="w">${esc(x.w)}</span>
+      <span class="badge ${x.lv}">${x.lv}</span>
+      <span class="m ${f.mask?'masked':''}" ${f.mask?`onclick="this.classList.toggle('masked')"`:''}>${esc(x.m)}</span>
+      ${f.batch?'':(inBank
+        ? `<button class="add-btn added" disabled>✓ 已入词库</button>`
+        : `<button class="add-btn" onclick="addWord('${esc(x.w)}')">+ 加入词库</button>`)}
+    </div>`;
+  }).join('');
+  $('#meta-info').textContent = `筛选结果 ${currentList.length} 个 · 第 ${f.page}/${maxPage()} 页`;
+  renderPager();
+  refreshStats();
+  updateBatchBar();
+}
+function maxPage(){ return Math.max(1, Math.ceil(currentList.length / f.pageSize)); }
+function renderPager(){
+  const p = $('#pager'); const mp = maxPage();
+  if(mp<=1){ p.innerHTML=''; return; }
+  let btns = `<button ${f.page<=1?'disabled':''} onclick="goPage(${f.page-1})">‹ 上一页</button>`;
+  const win = [];
+  for(let i=1;i<=mp;i++){ if(i===1||i===mp||Math.abs(i-f.page)<=2) win.push(i); }
+  let last=0;
+  for(const i of win){ if(i-last>1) btns+=`<span class="pg-info">…</span>`;
+    btns+= i===f.page?`<button class="mini-btn primary" disabled>${i}</button>`:`<button onclick="goPage(${i})">${i}</button>`; last=i; }
+  btns += `<button ${f.page>=mp?'disabled':''} onclick="goPage(${f.page+1})">下一页 ›</button>`;
+  p.innerHTML = btns;
+}
+function goPage(p){ f.page=p; renderList(); window.scrollTo({top:0,behavior:'smooth'}); }
+
+function addWord(w){ bank.add(w); saveBank(); toast(`已加入词库：${w}`); renderList(); }
+function toggleSel(i, on){ on?selected.add(i):selected.delete(i); updateBatchBar(); }
+function updateBatchBar(){ $('#batch-n').textContent = selected.size; $('#batch-bar').classList.toggle('show', f.batch && selected.size>0); }
+function batchAdd(){
+  let n=0;
+  selected.forEach(i=>{ const w=VOCAB[i].w; if(!bank.has(w)){bank.add(w);n++;} });
+  selected.clear(); saveBank(); toast(`已将 ${n} 个新单词加入词库`); renderList();
+}
+function toggleBatch(on){
+  f.batch = on; $('#tgl-batch').checked = on;
+  if(!on) selected.clear();
+  renderList();
+}
+
+/* ================= 词库渲染 ================= */
+function renderBank(){
+  const q = bankQ.trim().toLowerCase();
+  const items = VOCAB.filter(x=>bank.has(x.w) && (!q || x.w.toLowerCase().includes(q) || x.m.toLowerCase().includes(q)));
+  const seen = new Set(); const uniq = items.filter(x=>seen.has(x.w)?false:(seen.add(x.w),true));
+  const el = $('#bank-list');
+  if(!uniq.length){ el.innerHTML = `<div class="empty">${bank.size? '没有匹配的单词':'词库还是空的 — 去「词表阅读」筛选并加入单词吧'}</div>`; refreshStats(); return; }
+  el.innerHTML = uniq.map(x=>`<div class="word-row">
+      <span class="w">${esc(x.w)}</span>
+      <span class="badge ${x.lv}">${x.lv}</span>
+      <span class="m">${esc(x.m)}</span>
+      <button class="rm-btn" title="从词库移除" onclick="removeWord('${esc(x.w)}')">×</button>
+    </div>`).join('');
+  refreshStats();
+}
+function removeWord(w){ bank.delete(w); saveBank(); toast(`已移出词库：${w}`); renderBank(); if(!$('#view-read').classList.contains('hidden')) renderList(); }
+
+/* ================= 导入导出 ================= */
+function download(name, text, mime){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], {type:mime}));
+  a.download = name; a.click(); URL.revokeObjectURL(a.href);
+}
+function exportBank(fmt){
+  if(!bank.size) return toast('词库是空的');
+  const words = VOCAB.filter(x=>bank.has(x.w));
+  const seen = new Set(); const uniq = words.filter(x=>seen.has(x.w)?false:(seen.add(x.w),true));
+  if(fmt==='txt') download('个人词库.txt', uniq.map(x=>`${x.w}\t${x.m}\t${x.lv}级`).join('\n'), 'text/plain;charset=utf-8');
+  else download('个人词库.json', JSON.stringify(uniq.map(x=>({word:x.w, meaning:x.m, level:x.lv})), null, 2), 'application/json');
+  toast('已导出词库');
+}
+function exportShown(){
+  if(!currentList.length) return toast('当前没有可导出的结果');
+  download('筛选结果.txt', currentList.map(x=>`${x.w}\t${x.m}\t${x.lv}级`).join('\n'), 'text/plain;charset=utf-8');
+  toast(`已导出 ${currentList.length} 个单词`);
+}
+function importBank(){ $('#import-file').click(); }
+function onImportFile(e){
+  const file = e.target.files[0]; if(!file) return;
+  const rd = new FileReader();
+  rd.onload = ()=>{
+    try{
+      const arr = JSON.parse(rd.result);
+      let n=0;
+      arr.forEach(it=>{ const w = typeof it==='string'? it : it.word; if(w && !bank.has(w)){bank.add(w);n++;} });
+      saveBank(); renderBank(); toast(`导入成功，新增 ${n} 个单词`);
+    }catch(err){ toast('导入失败：文件不是有效的 JSON'); }
+    e.target.value='';
+  };
+  rd.readAsText(file);
+}
+function clearBank(){
+  if(!bank.size) return toast('词库已经是空的');
+  if(confirm(`确定清空个人词库吗？共 ${bank.size} 个单词，此操作不可撤销。`)){ bank.clear(); saveBank(); renderBank(); renderList(); toast('词库已清空'); }
+}
+
+/* ================= 标签页 ================= */
+function switchTab(t){
+  $('#tab-read').classList.toggle('active', t==='read');
+  $('#tab-bank').classList.toggle('active', t==='bank');
+  $('#view-read').classList.toggle('hidden', t!=='read');
+  $('#view-bank').classList.toggle('hidden', t!=='bank');
+  if(t==='bank') renderBank();
+}
+
+/* ================= 事件绑定 ================= */
+document.querySelectorAll('#lv-chips .chip').forEach(c=>c.addEventListener('click', ()=>{
+  document.querySelectorAll('#lv-chips .chip').forEach(x=>x.classList.remove('active'));
+  c.classList.add('active'); f.lv=c.dataset.lv; f.page=1; renderList();
+}));
+(function(){
+  const sel = $('#letter-sel');
+  'abcdefghijklmnopqrstuvwxyz'.split('').forEach(l=>{ const o=document.createElement('option'); o.value=l; o.textContent=l.toUpperCase(); sel.appendChild(o); });
+})();
+$('#letter-sel').addEventListener('change', e=>{ f.letter=e.target.value; f.page=1; renderList(); });
+$('#q').addEventListener('input', e=>{ f.q=e.target.value; f.page=1; renderList(); });
+$('#bank-q').addEventListener('input', e=>{ bankQ=e.target.value; renderBank(); });
+$('#tgl-hide-banked').addEventListener('change', e=>{ f.hideBanked=e.target.checked; f.page=1; renderList(); });
+$('#tgl-mask').addEventListener('change', e=>{ f.mask=e.target.checked; renderList(); });
+$('#tgl-batch').addEventListener('change', e=>toggleBatch(e.target.checked));
+$('#btn-export-shown').addEventListener('click', exportShown);
+
+/* ================= 启动 ================= */
+renderList();
+</script>
+</body>
+</html>
