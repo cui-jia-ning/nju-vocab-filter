@@ -175,6 +175,7 @@
   .auth-box .auth-switch{text-align:center;margin-top:16px;font-size:13px;color:var(--sub)}
   .auth-box .auth-switch a{color:var(--accent);cursor:pointer;font-weight:500}
   .auth-box .auth-err{color:var(--a);font-size:12.5px;text-align:center;margin-top:10px;min-height:18px}
+  .auth-box .auth-tip{font-size:12px;color:var(--sub);text-align:center;margin-top:12px;line-height:1.7;padding:8px 12px;background:#f8f9fc;border-radius:8px}
   .auth-box .auth-user{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line);margin-top:16px}
   .auth-box .auth-user .uname{font-size:13px;font-weight:600;flex:1}
   .auth-box .auth-user .logout-btn{font-size:12px;color:var(--a);cursor:pointer;border:1px solid #f3c2c2;padding:4px 10px;border-radius:7px;background:#fff}
@@ -196,6 +197,7 @@
         <label>密码</label>
         <input type="password" id="auth-password" placeholder="请输入密码" autocomplete="current-password">
       </div>
+      <div class="auth-tip hidden" id="auth-tip">用户名和密码无需与校园账号一致，信息仅用于词库数据备份与同步</div>
       <button class="auth-btn" id="auth-submit" onclick="authSubmit()">登录</button>
       <div class="auth-err" id="auth-err"></div>
       <div class="auth-switch">
@@ -351,6 +353,7 @@ function toggleAuthMode() {
   $('#auth-switch-text').textContent = authMode === 'login' ? '还没有账号？' : '已有账号？';
   $('#auth-switch-link').textContent = authMode === 'login' ? '注册' : '登录';
   $('#auth-err').textContent = '';
+  $('#auth-tip').classList.toggle('hidden', authMode !== 'register');
 }
 
 async function authSubmit() {
