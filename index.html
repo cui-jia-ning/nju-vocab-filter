@@ -174,6 +174,11 @@
   .auth-box .auth-btn:disabled{opacity:.5;cursor:not-allowed}
   .auth-box .auth-switch{text-align:center;margin-top:16px;font-size:13px;color:var(--sub)}
   .auth-box .auth-switch a{color:var(--accent);cursor:pointer;font-weight:500}
+  .auth-box .auth-divider{display:flex;align-items:center;margin:16px 0 12px;color:var(--sub);font-size:12px}
+  .auth-box .auth-divider::before,.auth-box .auth-divider::after{content:'';flex:1;height:1px;background:var(--line)}
+  .auth-box .auth-divider span{padding:0 12px}
+  .auth-box .auth-btn-offline{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--sub);font-size:13px;cursor:pointer;transition:all .15s}
+  .auth-box .auth-btn-offline:hover{border-color:var(--accent);color:var(--accent)}
   .auth-box .auth-err{color:var(--a);font-size:12.5px;text-align:center;margin-top:10px;min-height:18px}
   .auth-box .auth-tip{font-size:12px;color:var(--sub);text-align:center;margin-top:12px;line-height:1.7;padding:8px 12px;background:#f8f9fc;border-radius:8px}
   .auth-box .auth-user{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line);margin-top:16px}
@@ -204,6 +209,10 @@
         <span id="auth-switch-text">还没有账号？</span>
         <a id="auth-switch-link" onclick="toggleAuthMode()">注册</a>
       </div>
+      <div class="auth-divider">
+        <span>或</span>
+      </div>
+      <button class="auth-btn-offline" onclick="enterOfflineMode()">跳过登录，离线使用</button>
       <div class="auth-user hidden" id="auth-user-bar">
         <span class="uname" id="auth-username-display"></span>
         <span class="logout-btn" onclick="doLogout()">退出</span>
@@ -331,6 +340,7 @@
 /* ================= API 客户端 ================= */
 const API_BASE = 'https://web-production-e0a85.up.railway.app';
 let authToken = localStorage.getItem('nju-vocab-token') || '';
+let isOffline = false;
 let currentUser = null;
 
 async function api(method, path, body) {
@@ -388,6 +398,20 @@ function showLoggedIn() {
   $('#app-tabs').classList.remove('hidden');
   $('#auth-user-bar').classList.remove('hidden');
   $('#auth-username-display').textContent = currentUser || '已登录';
+  if (location.hash === '#/app' || localStorage.getItem('nju-vocab-skip-home') === '1') {
+    showView('read');
+  } else {
+    showView('home');
+  }
+}
+
+function enterOfflineMode() {
+  isOffline = true;
+  $('#auth-overlay').classList.add('hidden');
+  $('#app-header').classList.remove('hidden');
+  $('#app-tabs').classList.remove('hidden');
+  $('#auth-user-bar').classList.remove('hidden');
+  $('#auth-username-display').textContent = '离线模式';
   if (location.hash === '#/app' || localStorage.getItem('nju-vocab-skip-home') === '1') {
     showView('read');
   } else {
@@ -598,7 +622,8 @@ function clearBank(){
 /* ================= 艾宾浩斯复习 ================= */
 async function renderReview() {
   const el = $('#review-list');
-  if (!authToken) { el.innerHTML = '<div class="empty">请先登录后查看复习任务</div>'; return; }
+  if (!authToken && !isOffline) { el.innerHTML = '<div class="empty">请先登录后查看复习任务</div>'; return; }
+  if (isOffline) { el.innerHTML = '<div class="empty">离线模式下暂不支持复习功能，请登录后使用</div>'; return; }
   el.innerHTML = '<div class="empty" style="padding:20px">加载中…</div>';
   try {
     const items = await api('GET', '/review/today');
