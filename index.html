@@ -149,9 +149,9 @@
   .homelink{font-size:12px;color:var(--sub);cursor:pointer;text-decoration:none;margin-left:10px}
   .homelink:hover{color:var(--accent)}
 
-  footer.credit{margin-top:16px;text-align:center;font-size:10.5px;color:#b8bec9;line-height:1.5;opacity:.7}
-  footer.credit .dot{margin:0 6px;opacity:.5}
-  footer.credit .mail{color:#b8bec9;text-decoration:none;border-bottom:1px dotted #d0d5e0;transition:.12s}
+  footer.credit{margin-top:24px;text-align:center;font-size:9px;color:#c8cdd6;line-height:1.4;opacity:.5}
+  footer.credit .dot{margin:0 4px;opacity:.4}
+  footer.credit .mail{color:#c8cdd6;text-decoration:none;border-bottom:1px dotted #dde0e8;transition:.12s}
   footer.credit .mail:hover{color:var(--accent);border-bottom-color:var(--accent)}
   .hidden{display:none!important}
   @media (max-width:640px){
@@ -185,9 +185,84 @@
   .auth-box .auth-user .uname{font-size:13px;font-weight:600;flex:1}
   .auth-box .auth-user .logout-btn{font-size:12px;color:var(--a);cursor:pointer;border:1px solid #f3c2c2;padding:4px 10px;border-radius:7px;background:#fff}
   .auth-box .auth-user .logout-btn:hover{background:var(--a);color:#fff}
+
+  /* ===== 设置按钮与面板 ===== */
+  .settings-btn{position:fixed;top:16px;right:16px;z-index:60;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--card);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:var(--shadow);transition:.2s}
+  .settings-btn:hover{border-color:var(--accent);transform:rotate(30deg)}
+  .settings-panel{position:fixed;top:60px;right:16px;z-index:60;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;width:260px;box-shadow:0 8px 30px rgba(0,0,0,.12);display:none}
+  .settings-panel.show{display:block}
+  .settings-panel h3{font-size:14px;font-weight:600;margin-bottom:12px;color:var(--ink)}
+  .settings-item{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line)}
+  .settings-item:last-child{border-bottom:none}
+  .settings-item label{font-size:13px;color:var(--ink)}
+  .settings-item .desc{font-size:11px;color:var(--sub);margin-top:2px}
+  .toggle-switch{position:relative;width:40px;height:22px;background:#ddd;border-radius:11px;cursor:pointer;transition:.2s}
+  .toggle-switch.on{background:var(--accent)}
+  .toggle-switch::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;background:#fff;border-radius:50%;transition:.2s}
+  .toggle-switch.on::after{left:20px}
+  .settings-link{display:block;text-align:center;padding:8px;margin-top:4px;border:1px solid var(--line);border-radius:8px;font-size:12.5px;color:var(--sub);cursor:pointer;text-decoration:none;transition:.15s}
+  .settings-link:hover{border-color:var(--accent);color:var(--accent)}
+
+  /* ===== 暗黑模式 ===== */
+  body.dark{--bg:#1a1d2e;--card:#252840;--ink:#e4e6f0;--sub:#8b90a5;--line:#353850;--accent-soft:#2a3155;--shadow:0 1px 3px rgba(0,0,0,.3),0 4px 14px rgba(0,0,0,.2)}
+  body.dark .chip{background:#2a2d45;color:#a0a5b8}
+  body.dark select,body.dark input[type=text]{background:#2a2d45;color:var(--ink);border-color:var(--line)}
+  body.dark .word-row{background:#2a2d45}
+  body.dark .ex-btn{background:#2a2d45}
+  body.dark .mini-btn{background:#2a2d45}
+  body.dark .add-btn{background:#2a3155}
+  body.dark .rm-btn{background:#2a2d45}
+  body.dark .pager button{background:#2a2d45}
+  body.dark .batch-bar{background:#252840}
+  body.dark .batch-bar .cancel{background:#353850}
+  body.dark #toast{background:#252840}
+  body.dark .auth-box .auth-btn-offline{background:#2a2d45}
+  body.dark .auth-box .auth-tip{background:#2a2d45}
+  body.dark .hero h1{color:#e4e6f0}
+  body.dark .enter-btn{color:#e4e6f0;border-color:#4a4d65}
+  body.dark .enter-btn:hover{background:#e4e6f0;color:#1a1d2e;border-color:#e4e6f0}
+
+  /* ===== 教师管理面板 ===== */
+  .admin-panel{padding:16px}
+  .admin-toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:16px}
+  .admin-toolbar input{flex:1;min-width:200px}
+  .admin-table{width:100%;border-collapse:collapse;font-size:13px}
+  .admin-table th{text-align:left;padding:10px 8px;border-bottom:2px solid var(--line);font-weight:600;color:var(--sub);font-size:12px}
+  .admin-table td{padding:10px 8px;border-bottom:1px solid var(--line);color:var(--ink)}
+  .admin-table tr:hover{background:var(--accent-soft)}
+  .admin-table .actions{display:flex;gap:6px}
+  .admin-table .actions button{padding:4px 10px;border-radius:6px;border:1px solid var(--line);background:#fff;font-size:11.5px;cursor:pointer}
+  .admin-table .actions .edit-btn:hover{border-color:var(--accent);color:var(--accent)}
+  .admin-table .actions .del-btn:hover{border-color:var(--a);color:var(--a)}
+  .admin-edit-modal{position:fixed;inset:0;background:rgba(20,30,60,.55);backdrop-filter:blur(6px);z-index:100;display:flex;align-items:center;justify-content:center}
+  .admin-edit-box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:28px 24px;width:420px;max-width:90vw;box-shadow:0 20px 60px rgba(20,30,60,.2)}
+  .admin-edit-box h3{font-size:17px;font-weight:700;margin-bottom:16px}
+  .admin-edit-box .field{margin-bottom:12px}
+  .admin-edit-box .field label{display:block;font-size:12px;color:var(--sub);margin-bottom:4px}
+  .admin-edit-box .field input,.admin-edit-box .field textarea{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;outline:none}
+  .admin-edit-box .field textarea{resize:vertical;min-height:60px}
+  .admin-edit-box .btn-row{display:flex;gap:10px;margin-top:16px}
+  .admin-edit-box .btn-row button{flex:1;padding:9px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer}
+  .admin-edit-box .btn-save{background:var(--accent);border:none;color:#fff}
+  .admin-edit-box .btn-cancel{background:#fff;border:1px solid var(--line);color:var(--sub)}
 </style>
 </head>
 <body>
+<!-- 设置按钮 -->
+<button class="settings-btn" onclick="toggleSettings()" title="设置">⚙</button>
+<div class="settings-panel" id="settings-panel">
+  <h3>设置</h3>
+  <div class="settings-item">
+    <div>
+      <label>暗黑模式</label>
+      <div class="desc">切换深色背景</div>
+    </div>
+    <div class="toggle-switch" id="dark-toggle" onclick="toggleDarkMode()"></div>
+  </div>
+  <a class="settings-link" href="mailto:2310608108@qq.com?subject=南大词汇工具意见反馈" target="_blank">📮 意见反馈</a>
+  <a class="settings-link" href="https://afdian.com" target="_blank">💗 用爱发电（打赏支持）</a>
+</div>
+
 <div class="wrap">
   <!-- 登录弹窗 -->
   <div class="auth-overlay" id="auth-overlay">
@@ -236,6 +311,7 @@
     <div class="tab active" id="tab-read" onclick="switchTab('read')">📖 词表阅读</div>
     <div class="tab" id="tab-bank" onclick="switchTab('bank')">⭐ 个人词库<span class="cnt" id="tab-bank-cnt">0</span></div>
     <div class="tab" id="tab-review" onclick="switchTab('review')"> 今日复习<span class="cnt" id="tab-review-cnt">0</span></div>
+    <div class="tab hidden" id="tab-admin" onclick="switchTab('admin')">🔧 教师管理</div>
   </div>
 
   <!-- 落地页 -->
@@ -319,6 +395,31 @@
         <span style="font-size:12px;color:var(--sub)" id="review-hint">艾宾浩斯间隔：1 · 2 · 4 · 7 · 15 · 30 天</span>
       </div>
       <div id="review-list"></div>
+    </div>
+  </section>
+
+  <!-- 教师管理 -->
+  <section id="view-admin" class="hidden">
+    <div class="panel admin-panel">
+      <div class="admin-toolbar">
+        <input type="text" id="admin-search" placeholder="搜索单词或释义…" oninput="adminDebounceSearch()">
+        <select id="admin-level-filter" onchange="adminLoadWords()">
+          <option value="">全部级别</option>
+          <option value="A">A 级</option>
+          <option value="B">B 级</option>
+          <option value="C">C 级</option>
+        </select>
+        <button class="mini-btn primary" onclick="adminOpenAdd()">+ 添加单词</button>
+        <span style="flex:1"></span>
+        <span style="font-size:12px;color:var(--sub)" id="admin-count"></span>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="admin-table">
+          <thead><tr><th>单词</th><th>释义</th><th>级别</th><th>音标</th><th>操作</th></tr></thead>
+          <tbody id="admin-tbody"></tbody>
+        </table>
+      </div>
+      <div class="pager" id="admin-pager"></div>
     </div>
   </section>
 
@@ -672,12 +773,15 @@ function showView(name){
   $('#view-read').classList.toggle('hidden', name!=='read');
   $('#view-bank').classList.toggle('hidden', name!=='bank');
   $('#view-review').classList.toggle('hidden', name!=='review');
+  $('#view-admin').classList.toggle('hidden', name!=='admin');
   $('#tab-read').classList.toggle('active', name==='read');
   $('#tab-bank').classList.toggle('active', name==='bank');
   $('#tab-review').classList.toggle('active', name==='review');
+  $('#tab-admin').classList.toggle('active', name==='admin');
   if(name==='bank') renderBank();
   if(name==='read') renderList();
   if(name==='review') renderReview();
+  if(name==='admin') adminLoadWords();
 }
 function enterApp(){
   if($('#skip-home').checked) localStorage.setItem('nju-vocab-skip-home','1');
@@ -727,6 +831,177 @@ $('#tgl-mask').addEventListener('change', e=>{ f.mask=e.target.checked; renderLi
 $('#tgl-batch').addEventListener('change', e=>toggleBatch(e.target.checked));
 $('#btn-export-shown').addEventListener('click', exportShown);
 
+/* ================= 设置面板 ================= */
+function toggleSettings(){
+  $('#settings-panel').classList.toggle('show');
+}
+document.addEventListener('click', e => {
+  if(!e.target.closest('.settings-btn') && !e.target.closest('.settings-panel')){
+    $('#settings-panel').classList.remove('show');
+  }
+});
+
+function toggleDarkMode(){
+  document.body.classList.toggle('dark');
+  const isDark = document.body.classList.contains('dark');
+  localStorage.setItem('nju-vocab-dark', isDark ? '1' : '0');
+  $('#dark-toggle').classList.toggle('on', isDark);
+}
+if(localStorage.getItem('nju-vocab-dark')==='1'){
+  document.body.classList.add('dark');
+  setTimeout(()=>$('#dark-toggle').classList.add('on'),0);
+}
+
+/* ================= 教师管理面板 ================= */
+let adminWords = [];
+let adminPage = 0;
+const adminPageSize = 50;
+let adminSearchTimer = null;
+
+function adminDebounceSearch(){
+  clearTimeout(adminSearchTimer);
+  adminSearchTimer = setTimeout(()=>adminLoadWords(), 300);
+}
+
+async function adminLoadWords(){
+  const search = $('#admin-search').value.trim();
+  const level = $('#admin-level-filter').value;
+  let url = `/admin/words?skip=${adminPage*adminPageSize}&limit=${adminPageSize}`;
+  if(search) url += `&search=${encodeURIComponent(search)}`;
+  if(level) url += `&level=${level}`;
+  try{
+    adminWords = await api('GET', url);
+    renderAdminTable();
+  }catch(e){
+    toast('加载失败：'+e.message);
+  }
+}
+
+function renderAdminTable(){
+  const tbody = $('#admin-tbody');
+  if(!adminWords.length){
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--sub);padding:40px">暂无数据</td></tr>';
+    $('#admin-count').textContent = '共 0 条';
+    return;
+  }
+  tbody.innerHTML = adminWords.map(w => `
+    <tr>
+      <td style="font-weight:600">${w.word}</td>
+      <td>${w.meaning}</td>
+      <td>${w.level||'-'}</td>
+      <td style="font-size:11px;color:var(--sub)">${w.phonetic||'-'}</td>
+      <td class="actions">
+        <button class="edit-btn" onclick="adminOpenEdit(${w.id})">编辑</button>
+        <button class="del-btn" onclick="adminDeleteWord(${w.id},'${w.word}')">删除</button>
+      </td>
+    </tr>
+  `).join('');
+  $('#admin-count').textContent = `第 ${adminPage+1} 页 · 共 ${adminWords.length} 条`;
+  renderAdminPager();
+}
+
+function renderAdminPager(){
+  const pager = $('#admin-pager');
+  pager.innerHTML = `
+    <button ${adminPage===0?'disabled':''} onclick="adminPage--;adminLoadWords()">上一页</button>
+    <span style="font-size:13px;color:var(--sub)">第 ${adminPage+1} 页</span>
+    <button ${adminWords.length<adminPageSize?'disabled':''} onclick="adminPage++;adminLoadWords()">下一页</button>
+  `;
+}
+
+function adminOpenAdd(){
+  adminOpenEditModal(null);
+}
+
+function adminOpenEdit(id){
+  const word = adminWords.find(w=>w.id===id);
+  if(word) adminOpenEditModal(word);
+}
+
+function adminOpenEditModal(word){
+  const isEdit = !!word;
+  const modal = document.createElement('div');
+  modal.className = 'admin-edit-modal';
+  modal.id = 'admin-edit-modal';
+  modal.innerHTML = `
+    <div class="admin-edit-box">
+      <h3>${isEdit?'编辑单词':'添加单词'}</h3>
+      <div class="field">
+        <label>单词 *</label>
+        <input type="text" id="ae-word" value="${word?word.word:''}" ${isEdit?'readonly':''}>
+      </div>
+      <div class="field">
+        <label>释义 *</label>
+        <textarea id="ae-meaning">${word?word.meaning:''}</textarea>
+      </div>
+      <div class="field">
+        <label>级别 (A/B/C)</label>
+        <input type="text" id="ae-level" value="${word?word.level||'':''}" maxlength="1">
+      </div>
+      <div class="field">
+        <label>音标</label>
+        <input type="text" id="ae-phonetic" value="${word?word.phonetic||'':''}">
+      </div>
+      <div class="field">
+        <label>例句</label>
+        <textarea id="ae-example">${word?word.example||'':''}</textarea>
+      </div>
+      <div class="field">
+        <label>例句翻译</label>
+        <textarea id="ae-example-zh">${word?word.example_zh||'':''}</textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn-cancel" onclick="adminCloseEditModal()">取消</button>
+        <button class="btn-save" onclick="adminSaveWord(${isEdit?word.id:'null'})">保存</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+function adminCloseEditModal(){
+  const modal = $('#admin-edit-modal');
+  if(modal) modal.remove();
+}
+
+async function adminSaveWord(id){
+  const word = $('#ae-word').value.trim();
+  const meaning = $('#ae-meaning').value.trim();
+  if(!word || !meaning){ toast('单词和释义不能为空'); return; }
+  const data = {
+    word,
+    meaning,
+    level: $('#ae-level').value.trim() || null,
+    phonetic: $('#ae-phonetic').value.trim() || null,
+    example: $('#ae-example').value.trim() || null,
+    example_zh: $('#ae-example-zh').value.trim() || null,
+  };
+  try{
+    if(id){
+      await api('PUT', `/admin/words/${id}`, data);
+      toast('更新成功');
+    }else{
+      await api('POST', '/admin/words', data);
+      toast('添加成功');
+    }
+    adminCloseEditModal();
+    adminLoadWords();
+  }catch(e){
+    toast('保存失败：'+e.message);
+  }
+}
+
+async function adminDeleteWord(id, wordText){
+  if(!confirm(`确定要删除单词 "${wordText}" 吗？`)) return;
+  try{
+    await api('DELETE', `/admin/words/${id}`);
+    toast('删除成功');
+    adminLoadWords();
+  }catch(e){
+    toast('删除失败：'+e.message);
+  }
+}
+
 /* ================= 启动 ================= */
 $('#auth-password').addEventListener('keydown', e => { if (e.key === 'Enter') authSubmit(); });
 $('#auth-username').addEventListener('keydown', e => { if (e.key === 'Enter') $('#auth-password').focus(); });
@@ -739,6 +1014,10 @@ if (authToken) {
     showLoggedIn();
     syncBankFromServer();
     loadReviewCount();
+    // 检查是否为管理员
+    if(user.is_admin){
+      $('#tab-admin').classList.remove('hidden');
+    }
   }).catch(() => {
     // token 无效，显示登录框
     $('#auth-overlay').classList.remove('hidden');
