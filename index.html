@@ -780,7 +780,7 @@ function onImportFile(e){
 }
 function clearBank(){
   if(!bank.size) return toast('词库已经是空的');
-  if(confirm(`确定清空个人词库吗？共 ${bank.size} 个单词，此操作不可撤销。`)){ bank.clear(); saveBank(); renderBank(); renderList(); toast('词库已清空'); }
+  if(confirm(`确定清空个人词库吗？共 ${bank.size} 个单词，此操作不可撤销。`)){ bank.clear(); saveBank(); if(authToken){api('DELETE','/words').catch(()=>{});} renderBank(); renderList(); toast('词库已清空'); }
 }
 
 /* ================= 艾宾浩斯复习 ================= */
