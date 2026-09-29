@@ -245,6 +245,47 @@
   .admin-edit-box .btn-row button{flex:1;padding:9px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer}
   .admin-edit-box .btn-save{background:var(--accent);border:none;color:#fff}
   .admin-edit-box .btn-cancel{background:#fff;border:1px solid var(--line);color:var(--sub)}
+
+  /* ===== 使用引导 ===== */
+  .onboarding{position:fixed;inset:0;z-index:200;background:var(--bg);display:none;flex-direction:column;overflow:hidden}
+  .onboarding.show{display:flex}
+  .onboarding-header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px}
+  .onboarding-skip{font-size:13px;color:var(--sub);cursor:pointer;border:none;background:none;padding:8px 16px;border-radius:8px;transition:.15s}
+  .onboarding-skip:hover{background:var(--accent-soft);color:var(--accent)}
+  .onboarding-dots{display:flex;gap:8px}
+  .onboarding-dots .dot{width:8px;height:8px;border-radius:50%;background:var(--line);transition:.3s}
+  .onboarding-dots .dot.active{background:var(--accent);width:24px;border-radius:4px}
+  .onboarding-spacer{width:80px}
+  .onboarding-body{flex:1;display:flex;align-items:center;justify-content:center;padding:0 40px}
+  .onboarding-step{display:none;flex-direction:column;align-items:center;text-align:center;max-width:480px;animation:fadeSlide .5s ease}
+  .onboarding-step.active{display:flex}
+  @keyframes fadeSlide{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+  .onboarding-icon{width:120px;height:120px;border-radius:32px;display:flex;align-items:center;justify-content:center;font-size:56px;margin-bottom:32px;position:relative}
+  .onboarding-icon::after{content:'';position:absolute;inset:-8px;border-radius:36px;border:2px solid var(--line);opacity:.5}
+  .onboarding-icon.blue{background:linear-gradient(135deg,#e7ecfb,#f0f3ff)}
+  .onboarding-icon.green{background:linear-gradient(135deg,#edf7ee,#f4faf5)}
+  .onboarding-icon.orange{background:linear-gradient(135deg,#fff4e6,#fff8f0)}
+  .onboarding-icon.purple{background:linear-gradient(135deg,#f0edfb,#f5f2ff)}
+  .onboarding-icon.red{background:linear-gradient(135deg,#fde8e8,#fef2f2)}
+  .onboarding-step h2{font-size:22px;font-weight:700;color:var(--ink);margin-bottom:12px;letter-spacing:.02em}
+  .onboarding-step p{font-size:14.5px;color:var(--sub);line-height:1.8;max-width:360px}
+  .onboarding-step .feature-list{margin-top:20px;text-align:left;width:100%}
+  .onboarding-step .feature-item{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .onboarding-step .feature-item:last-child{border-bottom:none}
+  .onboarding-step .feature-item .fi-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;background:var(--accent-soft)}
+  .onboarding-step .feature-item .fi-text{font-size:13.5px;color:var(--ink);line-height:1.5}
+  .onboarding-step .feature-item .fi-text span{color:var(--sub);font-size:12.5px;display:block;margin-top:2px}
+  .onboarding-footer{padding:24px 40px 40px;display:flex;justify-content:center}
+  .onboarding-next{padding:14px 48px;border-radius:999px;border:none;background:var(--accent);color:#fff;font-size:15px;font-weight:600;cursor:pointer;transition:all .25s;letter-spacing:.04em}
+  .onboarding-next:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(59,91,219,.3)}
+  .onboarding-next:active{transform:translateY(0)}
+  @media(max-width:640px){
+    .onboarding-body{padding:0 20px}
+    .onboarding-icon{width:96px;height:96px;font-size:44px;border-radius:24px}
+    .onboarding-step h2{font-size:19px}
+    .onboarding-step p{font-size:13.5px}
+    .onboarding-footer{padding:20px 20px 32px}
+  }
 </style>
 </head>
 <body>
@@ -261,6 +302,19 @@
   </div>
   <a class="settings-link" href="mailto:2310608108@qq.com?subject=南大词汇工具意见反馈" target="_blank">📮 意见反馈</a>
   <a class="settings-link" href="https://afdian.com/a/nju-vocab" target="_blank">💗 用爱发电（打赏支持）</a>
+</div>
+
+<!-- 使用引导 -->
+<div class="onboarding" id="onboarding">
+  <div class="onboarding-header">
+    <span class="onboarding-spacer"></span>
+    <div class="onboarding-dots" id="ob-dots"></div>
+    <button class="onboarding-skip" onclick="finishOnboarding()">跳过</button>
+  </div>
+  <div class="onboarding-body" id="ob-body"></div>
+  <div class="onboarding-footer">
+    <button class="onboarding-next" id="ob-next" onclick="nextOnboardingStep()">下一步</button>
+  </div>
 </div>
 
 <div class="wrap">
@@ -500,7 +554,11 @@ function showLoggedIn() {
   $('#auth-user-bar').classList.remove('hidden');
   $('#auth-username-display').textContent = currentUser || '已登录';
   if (location.hash === '#/app' || localStorage.getItem('nju-vocab-skip-home') === '1') {
-    showView('read');
+    if(localStorage.getItem('nju-vocab-onboarded')==='1'){
+      showView('read');
+    } else {
+      showOnboarding();
+    }
   } else {
     showView('home');
   }
@@ -514,7 +572,11 @@ function enterOfflineMode() {
   $('#auth-user-bar').classList.remove('hidden');
   $('#auth-username-display').textContent = '离线模式';
   if (location.hash === '#/app' || localStorage.getItem('nju-vocab-skip-home') === '1') {
-    showView('read');
+    if(localStorage.getItem('nju-vocab-onboarded')==='1'){
+      showView('read');
+    } else {
+      showOnboarding();
+    }
   } else {
     showView('home');
   }
@@ -565,6 +627,7 @@ let bankQ = '';
 
 /* ================= 工具 ================= */
 const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
 const esc = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function saveBank(){ localStorage.setItem(LS_KEY, JSON.stringify([...bank])); refreshStats(); }
 let toastTimer;
@@ -786,7 +849,11 @@ function showView(name){
 function enterApp(){
   if($('#skip-home').checked) localStorage.setItem('nju-vocab-skip-home','1');
   location.hash = '#/app';
-  showView('read');
+  if(localStorage.getItem('nju-vocab-onboarded')==='1'){
+    showView('read');
+  } else {
+    showOnboarding();
+  }
 }
 function goHome(){
   location.hash = '';
@@ -1002,7 +1069,112 @@ async function adminDeleteWord(id, wordText){
   }
 }
 
-/* ================= 启动 ================= */
+/* ================= 使用引导 ================= */
+const onboardingSteps = [
+  {
+    icon: '📖', color: 'blue',
+    title: '词表阅读',
+    desc: '完整收录 3,086 个四六级词汇，按 A/B/C 三级分类，覆盖分级考、期末考、学位考全部考点。',
+    features: [
+      { icon: '', text: '级别筛选', sub: 'A 级高频 / B 级次高频 / C 级六级词' },
+      { icon: '🔍', text: '智能搜索', sub: '支持英文单词和中文释义模糊搜索' },
+      { icon: '🔊', text: '音标发音', sub: '点击单词或喇叭图标即可语音朗读' },
+    ]
+  },
+  {
+    icon: '🎯', color: 'green',
+    title: '高效筛选',
+    desc: '多维度筛选工具帮你快速定位目标词汇，专注薄弱环节。',
+    features: [
+      { icon: '', text: '首字母索引', sub: '按 A-Z 快速定位单词' },
+      { icon: '👁️', text: '释义遮罩', sub: '开启自测模式，点击释义才显示' },
+      { icon: '📋', text: '批量操作', sub: '勾选多个单词一键加入词库' },
+    ]
+  },
+  {
+    icon: '⭐', color: 'orange',
+    title: '个人词库',
+    desc: '建立你的专属词汇本，支持云端同步，多设备无缝切换。',
+    features: [
+      { icon: '➕', text: '一键收录', sub: '点击 + 按钮将单词加入个人词库' },
+      { icon: '📤', text: '导入导出', sub: '支持 TXT / JSON 格式跨设备迁移' },
+      { icon: '🔄', text: '云端同步', sub: '登录后词库自动备份到服务器' },
+    ]
+  },
+  {
+    icon: '', color: 'purple',
+    title: '艾宾浩斯复习',
+    desc: '基于遗忘曲线的智能复习系统，在最佳时机提醒你复习，让记忆更牢固。',
+    features: [
+      { icon: '📅', text: '科学间隔', sub: '1 → 2 → 4 → 7 → 15 → 30 天渐进复习' },
+      { icon: '✅', text: '自动追踪', sub: '每次复习自动记录，智能安排下次时间' },
+      { icon: '🏆', text: '掌握标记', sub: '完成全部复习周期自动标记为已掌握' },
+    ]
+  },
+  {
+    icon: '🚀', color: 'red',
+    title: '准备好了吗？',
+    desc: '一切就绪，开始你的高效词汇学习之旅吧！',
+    features: [
+      { icon: '💡', text: '小贴士', sub: '建议从 A 级词汇开始，循序渐进' },
+      { icon: '', text: '随时可用', sub: '支持手机、平板、电脑全平台访问' },
+      { icon: '', text: '完全免费', sub: '开源项目，无广告，无付费墙' },
+    ]
+  }
+];
+
+let obStep = 0;
+
+function initOnboarding(){
+  const dots = $('#ob-dots');
+  dots.innerHTML = onboardingSteps.map((_, i) => `<div class="dot${i===0?' active':''}"></div>`).join('');
+  renderOnboardingStep(0);
+}
+
+function renderOnboardingStep(idx){
+  const s = onboardingSteps[idx];
+  const body = $('#ob-body');
+  body.innerHTML = `
+    <div class="onboarding-step active">
+      <div class="onboarding-icon ${s.color}">${s.icon}</div>
+      <h2>${s.title}</h2>
+      <p>${s.desc}</p>
+      <div class="feature-list">
+        ${s.features.map(f => `
+          <div class="feature-item">
+            <div class="fi-icon">${f.icon}</div>
+            <div class="fi-text">${f.text}<span>${f.sub}</span></div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+  // update dots
+  $$('.onboarding-dots .dot').forEach((d, i) => d.classList.toggle('active', i === idx));
+  // update button text
+  $('#ob-next').textContent = idx === onboardingSteps.length - 1 ? '开始使用' : '下一步';
+}
+
+function nextOnboardingStep(){
+  obStep++;
+  if(obStep >= onboardingSteps.length){
+    finishOnboarding();
+  } else {
+    renderOnboardingStep(obStep);
+  }
+}
+
+function finishOnboarding(){
+  $('#onboarding').classList.remove('show');
+  localStorage.setItem('nju-vocab-onboarded', '1');
+  showView('read');
+}
+
+function showOnboarding(){
+  obStep = 0;
+  initOnboarding();
+  $('#onboarding').classList.add('show');
+}
 $('#auth-password').addEventListener('keydown', e => { if (e.key === 'Enter') authSubmit(); });
 $('#auth-username').addEventListener('keydown', e => { if (e.key === 'Enter') $('#auth-password').focus(); });
 
