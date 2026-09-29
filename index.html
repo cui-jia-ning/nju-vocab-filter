@@ -27,6 +27,9 @@
   .tab{flex:1;padding:11px 0;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:12px;font-size:15px;font-weight:600;color:var(--sub);cursor:pointer;box-shadow:var(--shadow);transition:.15s}
   .tab.active{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
   .tab .cnt{font-size:12px;font-weight:400;margin-left:6px;opacity:.85}
+  .tab.has-review{color:var(--a);border-color:var(--a);background:#fff5f5;animation:pulse-review 2s infinite}
+  body.dark .tab.has-review{background:#3a2020}
+  @keyframes pulse-review{0%,100%{box-shadow:var(--shadow)}50%{box-shadow:0 0 0 3px rgba(224,49,49,.15),var(--shadow)}}
 
   .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:14px;margin-bottom:14px}
   .filters{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
@@ -399,8 +402,9 @@
   <div class="tabs" id="app-tabs">
     <div class="tab active" id="tab-read" onclick="switchTab('read')">📖 词表阅读</div>
     <div class="tab" id="tab-bank" onclick="switchTab('bank')">⭐ 个人词库<span class="cnt" id="tab-bank-cnt">0</span></div>
-    <div class="tab" id="tab-review" onclick="switchTab('review')"> 今日复习<span class="cnt" id="tab-review-cnt">0</span></div>
+    <div class="tab" id="tab-review" onclick="switchTab('review')">🔄 今日复习<span class="cnt" id="tab-review-cnt">0</span></div>
     <div class="tab hidden" id="tab-admin" onclick="switchTab('admin')">🔧 教师管理</div>
+    <div class="tab hidden" id="tab-dev" onclick="switchTab('dev')">🛠️ 开发者</div>
   </div>
 
   <!-- 落地页 -->
@@ -515,6 +519,21 @@
           </table>
         </div>
         <div class="pager" id="admin-pager"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 开发者面板 -->
+  <section id="view-dev" class="hidden">
+    <div class="panel" style="padding:20px">
+      <h3 style="font-size:16px;font-weight:700;margin-bottom:16px">📊 数据概览</h3>
+      <div id="dev-stats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:24px"></div>
+      <h3 style="font-size:16px;font-weight:700;margin-bottom:12px">📋 最近登录日志</h3>
+      <div style="overflow-x:auto">
+        <table class="admin-table">
+          <thead><tr><th>用户</th><th>登录时间</th></tr></thead>
+          <tbody id="dev-logs"></tbody>
+        </table>
       </div>
     </div>
   </section>
@@ -695,6 +714,7 @@ async function loadReviewCount() {
   try {
     const items = await api('GET', '/review/today');
     $('#tab-review-cnt').textContent = items.length;
+    $('#tab-review').classList.toggle('has-review', items.length > 0);
   } catch (e) { /* silent */ }
 }
 
@@ -878,6 +898,7 @@ async function renderReview() {
   try {
     const items = await api('GET', '/review/today');
     $('#tab-review-cnt').textContent = items.length;
+    $('#tab-review').classList.toggle('has-review', items.length > 0);
     if (!items.length) { el.innerHTML = '<div class="empty">今天没有需要复习的单词，去词表里加一些吧 🎉</div>'; return; }
     el.innerHTML = items.map(it => {
       const v = VOCAB.find(x => x.w === it.word) || { m: it.meaning || '', lv: 'B', ph: '', ex: '', exZh: '' };
@@ -923,14 +944,17 @@ function showView(name){
   $('#view-bank').classList.toggle('hidden', name!=='bank');
   $('#view-review').classList.toggle('hidden', name!=='review');
   $('#view-admin').classList.toggle('hidden', name!=='admin');
+  $('#view-dev').classList.toggle('hidden', name!=='dev');
   $('#tab-read').classList.toggle('active', name==='read');
   $('#tab-bank').classList.toggle('active', name==='bank');
   $('#tab-review').classList.toggle('active', name==='review');
   $('#tab-admin').classList.toggle('active', name==='admin');
+  $('#tab-dev').classList.toggle('active', name==='dev');
   if(name==='bank') renderBank();
   if(name==='read') renderList();
   if(name==='review') renderReview();
   if(name==='admin') adminLoadWords();
+  if(name==='dev') loadDevData();
 }
 function enterApp(){
   if($('#skip-home').checked) localStorage.setItem('nju-vocab-skip-home','1');
@@ -1271,6 +1295,44 @@ async function adminLoadRatings(){
   }
 }
 
+/* ================= 开发者面板 ================= */
+async function loadDevData(){
+  try{
+    const [stats, logs] = await Promise.all([
+      api('GET', '/admin/stats'),
+      api('GET', '/admin/logs')
+    ]);
+    const cards = [
+      { label: '注册用户', value: stats.total_users, icon: '👥' },
+      { label: '今日登录', value: stats.total_logins_today, icon: '🔑' },
+      { label: '今日活跃', value: stats.unique_logins_today, icon: '🟢' },
+      { label: '词汇总数', value: stats.total_words, icon: '📖' },
+      { label: '今日复习', value: stats.total_reviews_today, icon: '🔄' },
+      { label: '待复习', value: stats.words_due_today, icon: '📅' },
+    ];
+    $('#dev-stats').innerHTML = cards.map(c => `
+      <div style="background:var(--accent-soft);border-radius:12px;padding:14px;text-align:center">
+        <div style="font-size:20px">${c.icon}</div>
+        <div style="font-size:24px;font-weight:700;color:var(--accent);margin:4px 0">${c.value}</div>
+        <div style="font-size:12px;color:var(--sub)">${c.label}</div>
+      </div>
+    `).join('');
+
+    if(!logs.length){
+      $('#dev-logs').innerHTML = '<tr><td colspan="2" style="text-align:center;color:var(--sub);padding:20px">暂无登录记录</td></tr>';
+    } else {
+      $('#dev-logs').innerHTML = logs.map(l => `
+        <tr>
+          <td>${esc(l.username)}</td>
+          <td>${new Date(l.login_at).toLocaleString('zh-CN')}</td>
+        </tr>
+      `).join('');
+    }
+  }catch(e){
+    $('#dev-stats').innerHTML = `<div style="padding:20px;text-align:center;color:var(--a);grid-column:1/-1">加载失败：${esc(e.message)}</div>`;
+  }
+}
+
 /* ================= 使用引导 ================= */
 const onboardingSteps = [
   {
@@ -1390,9 +1452,12 @@ if (authToken) {
     showLoggedIn();
     syncBankFromServer();
     loadReviewCount();
-    // 检查是否为管理员
+    // 检查是否为管理员或开发者
     if(user.is_admin){
       $('#tab-admin').classList.remove('hidden');
+    }
+    if(user.is_developer){
+      $('#tab-dev').classList.remove('hidden');
     }
     checkRatingPrompt();
   }).catch(() => {
