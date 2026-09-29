@@ -286,6 +286,41 @@
     .onboarding-step p{font-size:13.5px}
     .onboarding-footer{padding:20px 20px 32px}
   }
+
+  /* ===== 评价弹窗 ===== */
+  .rating-modal{position:fixed;inset:0;background:rgba(20,30,60,.55);backdrop-filter:blur(6px);z-index:200;display:flex;align-items:center;justify-content:center;animation:fadeIn .3s}
+  .rating-box{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:36px 32px 28px;width:400px;max-width:90vw;box-shadow:0 24px 80px rgba(20,30,60,.22);text-align:center;animation:scaleIn .35s ease}
+  .rating-box h3{font-size:18px;font-weight:700;margin-bottom:6px}
+  .rating-box .rating-sub{font-size:13px;color:var(--sub);margin-bottom:22px}
+  .rating-stars{display:flex;justify-content:center;gap:8px;margin-bottom:20px}
+  .rating-stars .star{font-size:36px;cursor:pointer;color:#ddd;transition:color .15s,transform .15s;user-select:none}
+  .rating-stars .star:hover,.rating-stars .star.active{color:#f59f00;transform:scale(1.15)}
+  .rating-box textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font-size:13px;resize:vertical;min-height:60px;outline:none;margin-bottom:16px;font-family:inherit}
+  .rating-box textarea:focus{border-color:var(--accent)}
+  .rating-btns{display:flex;gap:10px;justify-content:center}
+  .rating-btns button{padding:9px 24px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer}
+  .rating-btns .skip{background:transparent;border:1px solid var(--line);color:var(--sub)}
+  .rating-btns .submit{background:var(--accent);border:none;color:#fff}
+  .rating-btns .submit:disabled{opacity:.4;cursor:not-allowed}
+  @keyframes scaleIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+
+  /* ===== 评价汇总（管理面板） ===== */
+  .rating-summary{display:flex;gap:20px;align-items:center;padding:16px 0;border-bottom:1px solid var(--line);margin-bottom:16px}
+  .rating-avg{font-size:40px;font-weight:800;color:var(--accent)}
+  .rating-avg-label{font-size:12px;color:var(--sub)}
+  .rating-bars{flex:1}
+  .rating-bar-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--sub);margin-bottom:3px}
+  .rating-bar-row span:first-child{width:28px;text-align:right}
+  .rating-bar-track{flex:1;height:8px;background:var(--line);border-radius:4px;overflow:hidden}
+  .rating-bar-fill{height:100%;background:#f59f00;border-radius:4px;transition:width .3s}
+  .rating-bar-row span:last-child{width:20px}
+  .rating-list-item{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+  .rating-list-item:last-child{border-bottom:none}
+  .rating-list-score{font-size:20px;font-weight:700;color:#f59f00;width:36px;text-align:center;flex:none}
+  .rating-list-info{flex:1}
+  .rating-list-user{font-size:13px;font-weight:600}
+  .rating-list-time{font-size:11px;color:var(--sub)}
+  .rating-list-comment{font-size:13px;margin-top:4px;color:var(--ink)}
 </style>
 </head>
 <body>
@@ -464,16 +499,23 @@
           <option value="C">C 级</option>
         </select>
         <button class="mini-btn primary" onclick="adminOpenAdd()">+ 添加单词</button>
+        <button class="mini-btn" onclick="adminToggleRatings()" style="border-color:#f59f00;color:#f59f00">⭐ 查看评价</button>
         <span style="flex:1"></span>
         <span style="font-size:12px;color:var(--sub)" id="admin-count"></span>
       </div>
-      <div style="overflow-x:auto">
-        <table class="admin-table">
-          <thead><tr><th>单词</th><th>释义</th><th>级别</th><th>音标</th><th>操作</th></tr></thead>
-          <tbody id="admin-tbody"></tbody>
-        </table>
+      <div id="admin-ratings-section" class="hidden">
+        <div class="rating-summary" id="admin-rating-summary"></div>
+        <div id="admin-rating-list"></div>
       </div>
-      <div class="pager" id="admin-pager"></div>
+      <div id="admin-words-section">
+        <div style="overflow-x:auto">
+          <table class="admin-table">
+            <thead><tr><th>单词</th><th>释义</th><th>级别</th><th>音标</th><th>操作</th></tr></thead>
+            <tbody id="admin-tbody"></tbody>
+          </table>
+        </div>
+        <div class="pager" id="admin-pager"></div>
+      </div>
     </div>
   </section>
 
@@ -486,6 +528,25 @@
   <span>已勾选 <b id="batch-n">0</b> 个单词</span>
   <button class="do" onclick="batchAdd()">加入个人词库</button>
   <button class="cancel" onclick="toggleBatch(false)">退出批量模式</button>
+</div>
+
+<div class="rating-modal hidden" id="rating-modal">
+  <div class="rating-box">
+    <h3>觉得这个工具好用吗？</h3>
+    <p class="rating-sub">你的反馈能帮助我们把产品做得更好</p>
+    <div class="rating-stars" id="rating-stars">
+      <span class="star" data-v="1">★</span>
+      <span class="star" data-v="2">★</span>
+      <span class="star" data-v="3">★</span>
+      <span class="star" data-v="4">★</span>
+      <span class="star" data-v="5">★</span>
+    </div>
+    <textarea id="rating-comment" placeholder="有什么建议或想说的话？（选填）"></textarea>
+    <div class="rating-btns">
+      <button class="skip" onclick="closeRating()">以后再说</button>
+      <button class="submit" id="rating-submit" disabled onclick="submitRating()">提交评价</button>
+    </div>
+  </div>
 </div>
 
 <div id="toast"></div>
@@ -701,6 +762,7 @@ function addWord(w){
   bank.add(w); saveBank();
   if (authToken) { api('POST', '/words', { word: w, meaning: VOCAB.find(x=>x.w===w)?.m || '' }).catch(()=>{}); }
   toast(`已加入词库：${w}`); renderList();
+  checkRatingPrompt();
 }
 function toggleSel(i, on){ on?selected.add(i):selected.delete(i); updateBatchBar(); }
 function updateBatchBar(){ $('#batch-n').textContent = selected.size; $('#batch-bar').classList.toggle('show', f.batch && selected.size>0); }
@@ -711,6 +773,7 @@ function batchAdd(){
   selected.clear(); saveBank();
   if (authToken && toAdd.length) { api('POST', '/words/batch', toAdd).catch(()=>{}); }
   toast(`已将 ${n} 个新单词加入词库`); renderList();
+  checkRatingPrompt();
 }
 function toggleBatch(on){
   f.batch = on; $('#tgl-batch').checked = on;
@@ -1069,6 +1132,122 @@ async function adminDeleteWord(id, wordText){
   }
 }
 
+/* ================= 评价系统 ================= */
+let ratingScore = 0;
+
+function initRatingStars(){
+  $$('#rating-stars .star').forEach(s => {
+    s.addEventListener('click', () => {
+      ratingScore = parseInt(s.dataset.v);
+      $$('#rating-stars .star').forEach(x => x.classList.toggle('active', parseInt(x.dataset.v) <= ratingScore));
+      $('#rating-submit').disabled = false;
+    });
+    s.addEventListener('mouseenter', () => {
+      const v = parseInt(s.dataset.v);
+      $$('#rating-stars .star').forEach(x => x.style.color = parseInt(x.dataset.v) <= v ? '#f59f00' : '');
+    });
+    s.addEventListener('mouseleave', () => {
+      $$('#rating-stars .star').forEach(x => x.style.color = '');
+    });
+  });
+}
+
+function checkRatingPrompt(){
+  if(!authToken || isOffline) return;
+  if(localStorage.getItem('nju-vocab-rated') === '1') return;
+  if(localStorage.getItem('nju-vocab-rating-dismissed')) return;
+  const wordCount = bank.size;
+  const daysSinceFirst = (() => {
+    const first = localStorage.getItem('nju-vocab-first-use');
+    if(!first) { localStorage.setItem('nju-vocab-first-use', Date.now().toString()); return 0; }
+    return Math.floor((Date.now() - parseInt(first)) / 86400000);
+  })();
+  if(wordCount >= 15 || daysSinceFirst >= 3){
+    setTimeout(() => showRating(), 2000);
+  }
+}
+
+function showRating(){
+  if(localStorage.getItem('nju-vocab-rated') === '1') return;
+  ratingScore = 0;
+  $$('#rating-stars .star').forEach(x => { x.classList.remove('active'); x.style.color = ''; });
+  $('#rating-comment').value = '';
+  $('#rating-submit').disabled = true;
+  $('#rating-modal').classList.remove('hidden');
+}
+
+function closeRating(){
+  $('#rating-modal').classList.add('hidden');
+  localStorage.setItem('nju-vocab-rating-dismissed', Date.now().toString());
+}
+
+async function submitRating(){
+  if(!ratingScore) return;
+  try{
+    await api('POST', '/rating', { score: ratingScore, comment: $('#rating-comment').value.trim() });
+    localStorage.setItem('nju-vocab-rated', '1');
+    $('#rating-modal').classList.add('hidden');
+    toast('感谢你的评价！');
+  }catch(e){
+    toast('提交失败：' + e.message);
+  }
+}
+
+function adminToggleRatings(){
+  const sec = $('#admin-ratings-section');
+  const wordsSec = $('#admin-words-section');
+  if(sec.classList.contains('hidden')){
+    sec.classList.remove('hidden');
+    wordsSec.classList.add('hidden');
+    adminLoadRatings();
+  } else {
+    sec.classList.add('hidden');
+    wordsSec.classList.remove('hidden');
+  }
+}
+
+async function adminLoadRatings(){
+  try{
+    const ratings = await api('GET', '/admin/ratings');
+    if(!ratings.length){
+      $('#admin-rating-summary').innerHTML = '<div style="padding:20px;text-align:center;color:var(--sub);width:100%">暂无评价</div>';
+      $('#admin-rating-list').innerHTML = '';
+      return;
+    }
+    const avg = (ratings.reduce((s,r) => s + r.score, 0) / ratings.length).toFixed(1);
+    const dist = [0,0,0,0,0];
+    ratings.forEach(r => dist[r.score-1]++);
+    const maxDist = Math.max(...dist);
+
+    let barsHtml = '';
+    for(let i = 5; i >= 1; i--){
+      const pct = maxDist ? (dist[i-1] / maxDist * 100) : 0;
+      barsHtml += `<div class="rating-bar-row"><span>${i}★</span><div class="rating-bar-track"><div class="rating-bar-fill" style="width:${pct}%"></div></div><span>${dist[i-1]}</span></div>`;
+    }
+
+    $('#admin-rating-summary').innerHTML = `
+      <div style="text-align:center">
+        <div class="rating-avg">${avg}</div>
+        <div class="rating-avg-label">${ratings.length} 条评价</div>
+      </div>
+      <div class="rating-bars">${barsHtml}</div>
+    `;
+
+    $('#admin-rating-list').innerHTML = ratings.map(r => `
+      <div class="rating-list-item">
+        <div class="rating-list-score">${r.score}★</div>
+        <div class="rating-list-info">
+          <div class="rating-list-user">${esc(r.username || '匿名')}</div>
+          <div class="rating-list-time">${new Date(r.created_at).toLocaleString('zh-CN')}</div>
+          ${r.comment ? `<div class="rating-list-comment">${esc(r.comment)}</div>` : ''}
+        </div>
+      </div>
+    `).join('');
+  }catch(e){
+    $('#admin-rating-list').innerHTML = `<div style="padding:20px;text-align:center;color:var(--a)">加载失败：${esc(e.message)}</div>`;
+  }
+}
+
 /* ================= 使用引导 ================= */
 const onboardingSteps = [
   {
@@ -1178,6 +1357,8 @@ function showOnboarding(){
 $('#auth-password').addEventListener('keydown', e => { if (e.key === 'Enter') authSubmit(); });
 $('#auth-username').addEventListener('keydown', e => { if (e.key === 'Enter') $('#auth-password').focus(); });
 
+initRatingStars();
+
 // 检查是否已登录
 if (authToken) {
   // 验证 token 是否有效
@@ -1190,6 +1371,7 @@ if (authToken) {
     if(user.is_admin){
       $('#tab-admin').classList.remove('hidden');
     }
+    checkRatingPrompt();
   }).catch(() => {
     // token 无效，显示登录框
     $('#auth-overlay').classList.remove('hidden');
