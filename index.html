@@ -338,6 +338,13 @@
     </div>
     <div class="toggle-switch" id="dark-toggle" onclick="toggleDarkMode()"></div>
   </div>
+  <div class="settings-item" id="settings-user-info" style="flex-direction:column;align-items:stretch;gap:8px">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:18px">👤</span>
+      <span style="font-size:14px;font-weight:600" id="settings-username">未登录</span>
+    </div>
+    <button onclick="doLogout()" style="width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--sub);font-size:13px;cursor:pointer;transition:.15s" onmouseover="this.style.borderColor='var(--a)';this.style.color='var(--a)'" onmouseout="this.style.borderColor='var(--line)';this.style.color='var(--sub)'">退出登录</button>
+  </div>
   <a class="settings-link" href="mailto:2310608108@qq.com?subject=南大词汇工具意见反馈" target="_blank">📮 意见反馈</a>
   <a class="settings-link" href="https://afdian.com/a/nju-vocab" target="_blank">💗 用爱发电（打赏支持）</a>
 </div>
@@ -656,6 +663,7 @@ function showLoggedIn() {
   $('#app-tabs').classList.remove('hidden');
   $('#auth-user-bar').classList.remove('hidden');
   $('#auth-username-display').textContent = currentUser || '已登录';
+  $('#settings-username').textContent = currentUser || '已登录';
   if (location.hash === '#/app' || localStorage.getItem('nju-vocab-skip-home') === '1') {
     if(localStorage.getItem('nju-vocab-onboarded')==='1'){
       showView('read');
@@ -696,6 +704,9 @@ function doLogout() {
   $('#auth-username').value = '';
   $('#auth-password').value = '';
   $('#auth-err').textContent = '';
+  $('#settings-username').textContent = '未登录';
+  $('#tab-admin').classList.add('hidden');
+  $('#tab-dev').classList.add('hidden');
   authMode = 'login';
   toggleAuthMode(); toggleAuthMode(); // reset to login
   showView('home');
