@@ -307,6 +307,19 @@
   .rating-btns .submit:disabled{opacity:.4;cursor:not-allowed}
   @keyframes scaleIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
 
+  /* ===== 公告弹窗 ===== */
+  .announcement-modal{position:fixed;inset:0;background:rgba(20,30,60,.55);backdrop-filter:blur(6px);z-index:210;display:flex;align-items:center;justify-content:center;animation:fadeIn .3s}
+  .announcement-box{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:32px;width:440px;max-width:90vw;max-height:80vh;overflow-y:auto;box-shadow:0 24px 80px rgba(20,30,60,.22);text-align:center;animation:scaleIn .35s ease}
+  .announcement-badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;margin-bottom:12px}
+  .announcement-badge.update{background:#e7ecfb;color:#3b5bdb}
+  .announcement-badge.holiday{background:#fff4e6;color:#e8590c}
+  .announcement-badge.notice{background:#edf7ee;color:#2b8a3e}
+  .announcement-box h3{font-size:18px;font-weight:700;margin-bottom:12px}
+  .announcement-box .ann-content{font-size:14px;color:var(--sub);line-height:1.8;text-align:left;margin-bottom:20px;white-space:pre-wrap}
+  .announcement-box .ann-date{font-size:12px;color:var(--sub);opacity:.6;margin-bottom:16px}
+  .announcement-box button{padding:10px 32px;border-radius:10px;font-size:14px;font-weight:600;background:var(--accent);border:none;color:#fff;cursor:pointer;transition:.15s}
+  .announcement-box button:hover{opacity:.9}
+
   /* ===== 评价汇总（管理面板） ===== */
   .rating-summary{display:flex;gap:20px;align-items:center;padding:16px 0;border-bottom:1px solid var(--line);margin-bottom:16px}
   .rating-avg{font-size:40px;font-weight:800;color:var(--accent)}
@@ -511,12 +524,26 @@
         </select>
         <button class="mini-btn primary" onclick="adminOpenAdd()">+ 添加单词</button>
         <button class="mini-btn" onclick="adminToggleRatings()" style="border-color:#f59f00;color:#f59f00">⭐ 查看评价</button>
+        <button class="mini-btn" onclick="adminToggleAnnouncements()" style="border-color:#3b5bdb;color:#3b5bdb">📢 公告管理</button>
         <span style="flex:1"></span>
         <span style="font-size:12px;color:var(--sub)" id="admin-count"></span>
       </div>
       <div id="admin-ratings-section" class="hidden">
         <div class="rating-summary" id="admin-rating-summary"></div>
         <div id="admin-rating-list"></div>
+      </div>
+      <div id="admin-announcements-section" class="hidden">
+        <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap">
+          <input type="text" id="ann-new-title" placeholder="公告标题" style="flex:1;min-width:150px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;outline:none">
+          <select id="ann-new-type" style="padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;outline:none">
+            <option value="update">版本更新</option>
+            <option value="holiday">节日祝福</option>
+            <option value="notice">公告</option>
+          </select>
+          <button class="mini-btn primary" onclick="adminCreateAnnouncement()">发布</button>
+        </div>
+        <textarea id="ann-new-content" placeholder="公告内容…" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;resize:vertical;min-height:80px;outline:none;margin-bottom:16px;font-family:inherit"></textarea>
+        <div id="admin-announcement-list"></div>
       </div>
       <div id="admin-words-section">
         <div style="overflow-x:auto">
@@ -572,6 +599,16 @@
       <button class="skip" onclick="closeRating()">以后再说</button>
       <button class="submit" id="rating-submit" disabled onclick="submitRating()">提交评价</button>
     </div>
+  </div>
+</div>
+
+<div class="announcement-modal hidden" id="announcement-modal">
+  <div class="announcement-box">
+    <span class="announcement-badge" id="ann-badge"></span>
+    <h3 id="ann-title"></h3>
+    <div class="ann-date" id="ann-date"></div>
+    <div class="ann-content" id="ann-content"></div>
+    <button onclick="closeAnnouncement()">我知道了</button>
   </div>
 </div>
 
@@ -649,6 +686,13 @@ async function authSubmit() {
     showLoggedIn();
     syncBankFromServer();
     loadReviewCount();
+    // 登录后检查角色，显示对应 tab
+    try {
+      const me = await api('GET', '/me');
+      if (me.is_admin) $('#tab-admin').classList.remove('hidden');
+      if (me.is_developer) $('#tab-dev').classList.remove('hidden');
+    } catch(e) {}
+    checkAnnouncement();
   } catch (e) {
     $('#auth-err').textContent = e.message;
   } finally {
@@ -1251,9 +1295,38 @@ async function submitRating(){
   }
 }
 
+// ================= 公告系统 =================
+function checkAnnouncement(){
+  if(!authToken || isOffline) return;
+  api('GET', '/announcements/latest').then(data => {
+    if(!data.announcement) return;
+    const ann = data.announcement;
+    const seen = localStorage.getItem('nju-vocab-seen-announcements') || '';
+    const seenIds = seen.split(',').filter(Boolean);
+    if(seenIds.includes(String(ann.id))) return;
+    // Show announcement
+    const typeLabels = {update:'版本更新',holiday:'节日祝福',notice:'公告'};
+    $('#ann-badge').textContent = typeLabels[ann.type] || '公告';
+    $('#ann-badge').className = 'announcement-badge ' + (ann.type || 'notice');
+    $('#ann-title').textContent = ann.title;
+    $('#ann-date').textContent = ann.created_at ? new Date(ann.created_at).toLocaleDateString('zh-CN') : '';
+    $('#ann-content').textContent = ann.content;
+    $('#announcement-modal').classList.remove('hidden');
+    // Mark as seen
+    seenIds.push(String(ann.id));
+    localStorage.setItem('nju-vocab-seen-announcements', seenIds.join(','));
+  }).catch(() => {});
+}
+
+function closeAnnouncement(){
+  $('#announcement-modal').classList.add('hidden');
+}
+
 function adminToggleRatings(){
   const sec = $('#admin-ratings-section');
   const wordsSec = $('#admin-words-section');
+  const annSec = $('#admin-announcements-section');
+  annSec.classList.add('hidden');
   if(sec.classList.contains('hidden')){
     sec.classList.remove('hidden');
     wordsSec.classList.add('hidden');
@@ -1262,6 +1335,64 @@ function adminToggleRatings(){
     sec.classList.add('hidden');
     wordsSec.classList.remove('hidden');
   }
+}
+
+function adminToggleAnnouncements(){
+  const sec = $('#admin-announcements-section');
+  const wordsSec = $('#admin-words-section');
+  const ratSec = $('#admin-ratings-section');
+  ratSec.classList.add('hidden');
+  if(sec.classList.contains('hidden')){
+    sec.classList.remove('hidden');
+    wordsSec.classList.add('hidden');
+    adminLoadAnnouncements();
+  } else {
+    sec.classList.add('hidden');
+    wordsSec.classList.remove('hidden');
+  }
+}
+
+async function adminLoadAnnouncements(){
+  try{
+    const anns = await api('GET', '/admin/announcements');
+    const typeLabels = {update:'版本更新',holiday:'节日祝福',notice:'公告'};
+    const list = $('#admin-announcement-list');
+    if(!anns.length){ list.innerHTML = '<p style="color:var(--sub);font-size:13px;text-align:center;padding:20px">暂无公告</p>'; return; }
+    list.innerHTML = anns.map(a => `
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)">
+        <span class="announcement-badge ${a.announcement_type}" style="margin:0;flex-shrink:0">${typeLabels[a.announcement_type]||'公告'}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:600;font-size:14px;margin-bottom:4px">${a.title}</div>
+          <div style="font-size:12px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${a.content}</div>
+          <div style="font-size:11px;color:var(--sub);opacity:.6;margin-top:4px">${new Date(a.created_at).toLocaleString('zh-CN')}</div>
+        </div>
+        <button class="mini-btn" onclick="adminDeleteAnnouncement(${a.id})" style="flex-shrink:0;border-color:#e03131;color:#e03131;font-size:11px">删除</button>
+      </div>
+    `).join('');
+  }catch(e){ toast('加载公告失败'); }
+}
+
+async function adminCreateAnnouncement(){
+  const title = $('#ann-new-title').value.trim();
+  const content = $('#ann-new-content').value.trim();
+  const type = $('#ann-new-type').value;
+  if(!title || !content){ toast('请填写标题和内容'); return; }
+  try{
+    await api('POST', '/admin/announcements', { title, content, announcement_type: type });
+    $('#ann-new-title').value = '';
+    $('#ann-new-content').value = '';
+    toast('公告已发布');
+    adminLoadAnnouncements();
+  }catch(e){ toast('发布失败：' + e.message); }
+}
+
+async function adminDeleteAnnouncement(id){
+  if(!confirm('确定删除这条公告？')) return;
+  try{
+    await api('DELETE', '/admin/announcements/' + id);
+    toast('已删除');
+    adminLoadAnnouncements();
+  }catch(e){ toast('删除失败'); }
 }
 
 async function adminLoadRatings(){
@@ -1471,6 +1602,7 @@ if (authToken) {
       $('#tab-dev').classList.remove('hidden');
     }
     checkRatingPrompt();
+    checkAnnouncement();
   }).catch(() => {
     // token 无效，显示登录框
     $('#auth-overlay').classList.remove('hidden');
